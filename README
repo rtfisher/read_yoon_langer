@@ -37,4 +37,9 @@ Issues, rtf 010720
 
 (*) Some discrepancies in the reported value of w0 compared with table data.
 
+(*) Sung_chul defines the dimensionless radius mesh using the line
+
+       r      = 16. * np.arange (nr) / (nr - 1.) / 15.
+
+This produces r > 1, resulting in a scaled radius > rmax. Is this correct?
 
