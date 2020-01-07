@@ -1,6 +1,32 @@
+#######################################################################
+## 
+## Read Yoon and Langer (2005) plotfiles. Models are computed via the
+##  self-consistent field method according to a specific angular 
+##  momentum accretion model. Models are stored on a 2D spherical
+##  mesh in mu = cos theta and spherical radius r, nth x nr in extent.
+##
+## Furthermore, the model density, angular velocity, and potentials
+##  are stored in a dimensionless fashion. The dimensionless variables
+##  (here noted as primed variables) are defined as 
+##
+##     r ' = r / rmax
+##     rho' = rho / rhomax
+##     w'   = w / sqrt (G * rhomax)
+##     psi' = psi / (G * rmax**2. * rhomax)
+##     phi' = phi / (G * rmax**2. * rhomax)
+##
+## We rescale all quantities to obtain physical variables after readin.
+##
+## The file format was described in a private e-mail communication
+##  from Yoon, see yoon_langer_2005_format.txt file.
+##
+## Full details of their models are described in their 2005 A&A paper,
+##  doi:10.1051/0004-6361:20042542.
+##
+#######################################################################
 
-Issues
-======
+Issues, rtf 010720
+==================
 
 (*) Need to introduce differential elements for mu and r when the indices
     i or j are zero. 
