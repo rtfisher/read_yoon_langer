@@ -114,7 +114,7 @@ for filename in files :
     psiarr [i, j] = psi
     phiarr [i, j] = phi
 
-    sinth  = (1. - mu [i])**(1./2.)           # sintheta 
+    sinth  = (1. - (mu [i])**2.)**(1./2.)           # sintheta 
     z      = mu [i] * r [j]                   # z coordinate = r cos theta
     rcyl   = r [j] * sinth                    # cylindrical radius rcyl
                                               #   = r sin theta
