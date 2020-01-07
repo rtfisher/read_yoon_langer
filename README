@@ -1,0 +1,14 @@
+
+Issues
+======
+
+(*) Need to introduce differential elements for mu and r when the indices
+    i or j are zero. 
+
+(*) Angular momentum integrations are substantially off from reported global quantities, possibly due in part to previous issue.
+
+(*) Gravitational energy involves a factor of 1/2?
+
+(*) Some discrepancies in the reported value of w0 compared with table data.
+
+
