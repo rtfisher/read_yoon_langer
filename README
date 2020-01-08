@@ -29,6 +29,8 @@
 Issues, rtf 010720
 ==================
 
+(*) Pressure virial term appears to represent PV instead of 3 PV 
+
 (*) Gravitational energy involves a factor of 1/2?
 
 (*) Some discrepancies in the reported value of w0 compared with table data.
