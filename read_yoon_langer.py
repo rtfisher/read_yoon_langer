@@ -203,8 +203,6 @@ for filename in files :
   r = r * lengthfac
   rho = rho * (massfac / lengthfac**3.) 
   w = w / timefac
-#  psi = psi * G * rmax**2. * rhomax
-#  phi = phi * G * rmax**2. * rhomax
   psi = psi * lengthfac**2. / timefac**2. # potential energy = energy / mass
   phi = phi * lengthfac**2. / timefac**2.
   #end loop over files
