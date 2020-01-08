@@ -28,12 +28,31 @@
 import math
 import glob
 import numpy as np
+import sys
 
 # Define mathematical and physical constants
 
 pi = math.pi
 G = 6.674e-8 # CGS units
 msun = 1.987e33 # CGS
+smallfloat = sys.float_info.min # Store a minimum sized float
+
+# Define pressure according to completely degenerate electron gas,
+#  from Ostriker & Bodenheimer (1968), used by Yoon & Langer (2005).
+#  Take as arguments the dimensionless density rho as well as the central
+#  density rhomax, return pressure in CGS (dyne / cm^2)
+
+def pressure (rho, rhomax):
+
+  mue = 2.    # assume Y_e = 0.5 composition (e.g. pure C/O)
+  A = 6.01e22 # dyne / cm^2 
+  B = 9.82e5 * mue # g / cm^3
+
+  rho = rho * rhomax
+  x = (rho / B)**(1./3.)
+  p = A * (x * (2 * x**2. - 3.) * (x**2. + 1)**(1./2.) + 3. * math.asinh (x) )
+
+  return p
 
 files = glob.glob ("plot*")
 files.sort() # process files in order
@@ -77,9 +96,10 @@ for filename in files :
 
   counter = 0 # line counter beginning at 0
   totalmass = 0. # initialize totalmass check
-  totalJ    = 0.
-  totalEg   = 0.
-  totalErot = 0. 
+  totalJ    = 0. # total angular momentum check
+  totalEg   = 0. # total gravitational energy check
+  totalErot = 0. # total rotational energy check
+  totalpi3  = 0. # 3 P V virial term
 
 # Declare space for the 2D array model data on nth x nr mesh
 
@@ -94,9 +114,6 @@ for filename in files :
   mu     = np.arange (nth) / (nth - 1.)
   r      = 16. * np.arange (nr) / (nr - 1.) / 15.
 
-#  mu [i] = i / (nth - 1)             # mu = cos theta array
-#  r [j]  = 16. * j / (nr - 1.) / 15. # r  = spherical radius array
-
   for line in file:
     line = line.replace ("D", "E") # replace "D" to "E" to process as floats
     lst = line.split()
@@ -106,7 +123,7 @@ for filename in files :
     psi = float (lst [2]) # dimensionless total potential
     phi = float (lst [3]) # dimensionless gravitational potential
 
-    j = counter % nr          # set innermost array index in r
+    j = counter % nr           # set innermost array index in r
     i = (counter - j) // nth   # set outer array index in (cos theta)
 
     rhoarr [i, j] = rho
@@ -114,7 +131,7 @@ for filename in files :
     psiarr [i, j] = psi
     phiarr [i, j] = phi
 
-    sinth  = (1. - (mu [i])**2.)**(1./2.)           # sintheta 
+    sinth  = (1. - (mu [i])**2.)**(1./2.)     # sintheta 
     z      = mu [i] * r [j]                   # z coordinate = r cos theta
     rcyl   = r [j] * sinth                    # cylindrical radius rcyl
                                               #   = r sin theta
@@ -123,27 +140,36 @@ for filename in files :
 #  account only upper plane is modeled (mu >= 0), so incorporate an additional
 #  factor of 2 for the symmetric lower half plane (mu < 0). 
 
-    if ( (j != 0) and (i != 0) ):
-      dV     = 4. * pi * (r [j])**2. * (mu [i] - mu [i - 1]) * (r [j] - r [j - 1])
+    if (j != 0) :
+      dr = r [j] - r [j - 1]
     else :
-      dV     = 0.
+      dr = r [j + 1] - r [j]
+
+    if (i != 0) :
+      dcosth = mu [i] - mu [i - 1]
+    else :
+      dcosth = mu [i + 1] - mu [i]
+
+    dV = 4. * pi * (r [j])**2. * dcosth * dr
 
     dM = rho * dV               # mass in cell
     vphi = w * rcyl             # angular velocity
     dJ = dM * rcyl * vphi       # angular momentum in cell   
-    dEg= 0.5 * dM * phi         # gravitational energy (NOTE: factor 2?)
+    dEg= dM * phi               # gravitational energy 
     dErot = 0.5 * dM * vphi**2. # rotational energy
-
+    pdV = pressure (rho, rhomax) * dV # p dV used in virial computation
+     
 # Compute global quantities as cross-checks
     totalmass += dM
     totalJ    += dJ
     totalEg   += dEg
     totalErot += dErot
+    totalpi3  += pdV
     counter   += 1
     #end loop over line in file
 
-# Lastly, let's scale dimensional quantities
-# dimensional scalings for mass, length, time
+# Lastly, let's scale dimensional quantities, using scalings for
+#  mass, length, and time
 
   massfac   = rhomax * rmax**3.
   lengthfac = rmax
@@ -153,22 +179,49 @@ for filename in files :
   totalJ    = totalJ    * massfac * lengthfac**2. / timefac
   totalEg   = totalEg   * massfac * lengthfac**2. / timefac**2.
   totalErot = totalErot * massfac * lengthfac**2. / timefac**2.
+  totalpi3  = totalpi3  * lengthfac**3. # note pressure is dimensional
+  
+  print ("   Total computed mass = ", totalmass / msun, " solar masses") 
+  print ("   Fractional mass error = ", (totalmass - mtot) / mtot)
 
-  print ("  Total computed mass = ", totalmass / msun)
-  print ("  Fractional mass error = ", (totalmass - mtot) / mtot)
+# Add small float to denominator for zero J cases; similarly below for erot
+  print ("   Total computed J = ", totalJ)
+  print ("   Fractional J error = ", (totalJ - jtot) / (jtot + smallfloat))
 
-  print ("  Total computed J = ", totalJ)
-  print ("  Fractional J error = ", (totalJ - jtot) / jtot)
+  print ("   Total computed Eg = ", totalEg)
+  print ("   Fractional Eg error = ", (totalEg - egrav) / egrav)
 
-  print ("  Total computed Eg = ", totalEg)
-  print ("  Fractional Eg error = ", (totalEg - egrav) / egrav)
+  print ("   Total computed Erot = ", totalErot)
+  print ("   Fractional Erot error = ", (totalErot - erot) / (erot + smallfloat)) 
 
-  print ("  Total computed Erot = ", totalErot)
-  print ("  Fractional Erot error = ", (totalErot - erot) / erot) 
+  print ("   Total computed 3 P V = ", totalpi3)
+  print ("   Fractional 3 P V error = ", (totalpi3 - pi3) / pi3 )
+
+  print ("   Virial error = ", abs (2 * erot - egrav + 3. * pi3) / egrav)
+  print ("   Computed virial error = ", abs (2. * totalErot - totalEg + 3 * totalpi3) / totalEg)
 
   r = r * lengthfac
   rho = rho * (massfac / lengthfac**3.) 
   w = w / timefac
-  psi = psi * G * rmax**2. * rhomax
-  phi = phi * G * rmax**2. * rhomax
+#  psi = psi * G * rmax**2. * rhomax
+#  phi = phi * G * rmax**2. * rhomax
+  psi = psi * lengthfac**2. / timefac**2. # potential energy = energy / mass
+  phi = phi * lengthfac**2. / timefac**2.
   #end loop over files
+
+# Define pressure according to completely degenerate electron gas,
+#  from Ostriker & Bodenheimer (1968), used by Yoon & Langer (2005).
+#  Take as arguments the dimensionless density rho as well as the central
+#  density rhomax, return pressure in CGS (dyne / cm^2)
+
+def pressure (rho, rhomax):
+
+  mue = 2.    # assume Y_e = 0.5 composition (e.g. pure C/O)
+  A = 6.01e22 # dyne / cm^2 
+  B = 9.82e5 * mue # g / cm^3
+
+  rho = rho * rhomax
+  x = (rho / B)**(1./3.) 
+  p = A * (x * (2 * x**2. - 3.) * (x**2. + 1)**(1./2.) + 3. * math.asinh (x) )
+
+  return p
