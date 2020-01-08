@@ -3,7 +3,8 @@
 ## Read Yoon and Langer (2005) plotfiles. Models are computed via the
 ##  self-consistent field method according to a specific angular 
 ##  momentum accretion model. Models are stored on a 2D spherical
-##  mesh in mu = cos theta and spherical radius r, nth x nr in extent.
+##  mesh in mu = cos theta and spherical radius r, nth x nr in extent,
+##  in the upper-half plane (0 >= mu >= 1).
 ##
 ## Furthermore, the model density, angular velocity, and potentials
 ##  are stored in a dimensionless fashion. The dimensionless variables
@@ -28,18 +29,8 @@
 Issues, rtf 010720
 ==================
 
-(*) Need to introduce differential elements for mu and r when the indices
-    i or j are zero. 
-
-(*) Angular momentum integrations are substantially off from reported global quantities, possibly due in part to previous issue.
-
 (*) Gravitational energy involves a factor of 1/2?
 
 (*) Some discrepancies in the reported value of w0 compared with table data.
 
-(*) Sung_chul defines the dimensionless radius mesh using the line
-
-       r      = 16. * np.arange (nr) / (nr - 1.) / 15.
-
-This produces r > 1, resulting in a scaled radius > rmax. Is this correct?
 
