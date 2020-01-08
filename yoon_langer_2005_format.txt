@@ -1,0 +1,78 @@
+Yoon & Langer (2005, A&A, 436, 967--985) generated rotating equilibrium white dwarf models. We contacted Prof. Langer and obtained a large number of 2D axisymmetric datasets. Please contact Professor Fisher for the models (models.tar.gz). The following describes the format of the datasets (Quoted from Sung-Chul):
+
+You may find directories like 1d8, 2d8, ... 1d10. These numbers denote the central density
+of the models. In each directory, you may also find subdirectories like
+AAa and rigid. Rigid means rigid-body rotation models, while AA* means differentially 
+rotating models at a given central density (AA* sequences in the paper).
+
+"plot*" files contain detailed information of the models. See below for the data structure.
+
+I used spherical coordinate: r & mu = cos(theta).
+
+All the details about the numerical methods for constructing models are
+described in Yoon & Langer, 2005, A&A, 436, 967--985.
+
+The grid is set as the following:
+
+     ! Coordinates -----------------------------------------------
+      do i=1,nth
+        mu(i) = (i-1.d0)/(nth - 1.0d0) ! cos(th)
+      enddo
+      do j=1,nr
+        x(j) = 16.*(j-1.d0)/(nr-1.0)/15.0
+      enddo
+
+where nth = 149, and nr = 149 are used.
+
+The output format in each file is as the following:
+
+      open(17,file=outname(nopen), status='replace')
+      write(17,220) nth, nr, nmd
+      write(17,221) rmax,mtot,rhomax,tw,jtot,egrav,erot,pi3,
+&              temp,frhocrit,w0,ws,bfit
+      do i = 1,nth
+      do j = 1, nr
+        write(17,222) rho(i,j), w(i,j),psi(i,j), phi(i,j)
+      enddo
+      enddo
+ 220  format(1x,i3, 1x, i3, 1x, i1)
+ 221  format(13(1x,d20.9))
+ 222  format(4(1x,d20.9))
+      close(17)
+
+where:
+
+nth : number of grid in mu
+nr  : number of grid in r
+nmd : Ignore this
+
+rmax  : equatorial radius
+mtot  : total mass
+rhomax        : maximum density
+tw      : T/W -- ratio of the rotational energy to the gravitational energy
+jtot    : total angular momentum
+egrav   : gravitational energy
+erot    : rotational energy
+pi3     : volume integration of pressure times 3
+temp    : you can ignore this.
+frhocrit: 'parameter 'f_p' in the paper
+w0      : central angular velocity
+ws      : surface angular velocity
+bfit    : parameter 'a' in the paper
+
+rho(i,j) = rho(mu,r) : density
+w(i,j)  = Omega(mu,r): angular velocity
+Psi(i,j) = Psi(mu,r) : total potential
+Phi(i,j) = Phi(mu,r) : gravitaional potential
+
+
+Here, rho(i,j), w(i,j), Psi(i,j) and Phi(i,j) are scaled with the basis
+as described in the paper. So, they are dimensionless quantities. In order
+to convert them into dimensional ones, you need to multiply the basis, as
+the following (see the paper).
+
+rho = rho * rhomax
+w = w * sqrt(G*rhomax)
+Psi = Psi * G * Rmax^2 * rhomax
+Phi = Phi * G * Rmax^2 * rhomax
+Note: The dimensionless radial coordinate must be scaled by multiplying by rmax.
