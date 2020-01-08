@@ -208,20 +208,3 @@ for filename in files :
   psi = psi * lengthfac**2. / timefac**2. # potential energy = energy / mass
   phi = phi * lengthfac**2. / timefac**2.
   #end loop over files
-
-# Define pressure according to completely degenerate electron gas,
-#  from Ostriker & Bodenheimer (1968), used by Yoon & Langer (2005).
-#  Take as arguments the dimensionless density rho as well as the central
-#  density rhomax, return pressure in CGS (dyne / cm^2)
-
-def pressure (rho, rhomax):
-
-  mue = 2.    # assume Y_e = 0.5 composition (e.g. pure C/O)
-  A = 6.01e22 # dyne / cm^2 
-  B = 9.82e5 * mue # g / cm^3
-
-  rho = rho * rhomax
-  x = (rho / B)**(1./3.) 
-  p = A * (x * (2 * x**2. - 3.) * (x**2. + 1)**(1./2.) + 3. * math.asinh (x) )
-
-  return p
