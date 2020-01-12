@@ -28,7 +28,7 @@
 import math
 import glob
 import numpy as np
-import sys
+import sys, os
 
 # Define mathematical and physical constants
 
@@ -36,6 +36,10 @@ pi = math.pi
 G = 6.674e-8 # CGS units
 msun = 1.987e33 # CGS
 smallfloat = sys.float_info.min # Store a minimum sized float
+
+# functionality flags
+
+verbose = False  # verbose output
 
 # Define pressure according to completely degenerate electron gas,
 #  from Ostriker & Bodenheimer (1968), used by Yoon & Langer (2005).
@@ -54,12 +58,8 @@ def pressure (rho, rhomax):
 
   return p
 
-files = glob.glob ("plot*")
-files.sort() # process files in order
 
-for filename in files :
-  print ("Reading in file ", filename)
-  file = open (filename, "r")
+def analyze (file):
 
 # First, let's read in the header information
 
@@ -88,7 +88,7 @@ for filename in files :
   ws = float (lst [11]) # surface angular velocity
   bfit = float (lst [12]) # parameter a defined in paper
 
-  print ("  rhomax = ", rhomax)
+  print ("  rhomax9 = ", rhomax/1.e9)
   print ("  mtot = ", mtot / msun, " solar masses")
   print ("  T / W = ", tw)
 
@@ -155,7 +155,7 @@ for filename in files :
     dM = rho * dV               # mass in cell
     vphi = w * rcyl             # angular velocity
     dJ = dM * rcyl * vphi       # angular momentum in cell   
-    dEg= dM * phi               # gravitational energy 
+    dEg= 0.5 * dM * phi               # gravitational energy 
     dErot = 0.5 * dM * vphi**2. # rotational energy
     pdV = pressure (rho, rhomax) * dV # p dV used in virial computation
      
@@ -180,29 +180,53 @@ for filename in files :
   totalEg   = totalEg   * massfac * lengthfac**2. / timefac**2.
   totalErot = totalErot * massfac * lengthfac**2. / timefac**2.
   totalpi3  = totalpi3  * lengthfac**3. # note pressure is dimensional
-  
-  print ("   Total computed mass = ", totalmass / msun, " solar masses") 
-  print ("   Fractional mass error = ", (totalmass - mtot) / mtot)
+ 
+  if (verbose == True): 
+    print ("   Total computed mass = ", totalmass / msun, " solar masses") 
+    print ("   Fractional mass error = ", (totalmass - mtot) / mtot)
 
 # Add small float to denominator for zero J cases; similarly below for erot
-  print ("   Total computed J = ", totalJ)
-  print ("   Fractional J error = ", (totalJ - jtot) / (jtot + smallfloat))
+    print ("   Total computed J = ", totalJ)
+    print ("   Fractional J error = ", (totalJ - jtot) / (jtot + smallfloat))
 
-  print ("   Total computed Eg = ", totalEg)
-  print ("   Fractional Eg error = ", (totalEg - egrav) / egrav)
+    print ("   Total computed Eg = ", totalEg)
+    print ("   Fractional Eg error = ", (totalEg - egrav) / egrav)
 
-  print ("   Total computed Erot = ", totalErot)
-  print ("   Fractional Erot error = ", (totalErot - erot) / (erot + smallfloat)) 
+    print ("   Total computed Erot = ", totalErot)
+    print ("   Fractional Erot error = ", (totalErot - erot) / (erot + smallfloat)) 
 
-  print ("   Total computed 3 P V = ", totalpi3)
-  print ("   Fractional 3 P V error = ", (totalpi3 - pi3) / pi3 )
+    print ("   Total computed 3 P V = ", totalpi3)
+    print ("   Fractional 3 P V error = ", (totalpi3 - pi3) / pi3 )
 
-  print ("   Virial error = ", abs (2 * erot - egrav + 3. * pi3) / egrav)
-  print ("   Computed virial error = ", abs (2. * totalErot - totalEg + 3 * totalpi3) / totalEg)
+    print ("   Virial error = ", abs (2 * erot - egrav + 3. * pi3) / egrav)
+    print ("   Computed virial error = ", abs (2. * totalErot - totalEg + 3 * totalpi3) / totalEg)
 
   r = r * lengthfac
   rho = rho * (massfac / lengthfac**3.) 
   w = w / timefac
   psi = psi * lengthfac**2. / timefac**2. # potential energy = energy / mass
   phi = phi * lengthfac**2. / timefac**2.
-  #end loop over files
+
+  return #end analyze function
+
+# loop over all rigid model directories
+
+os.chdir ("models")
+pwd = os.getcwd() # store current model directory
+
+dirs  = glob.glob ("*")
+dirs.sort() # process directories in order
+
+for dir in dirs:
+
+  os.chdir (dir + "/rigid")
+
+  files = glob.glob ("plot*")
+  files.sort() # process files in order
+
+  for filename in files :
+    print ("Reading in file ", filename)
+    file = open (filename, "r")
+    analyze (file)
+
+  os.chdir (pwd) # change back into the model directory
