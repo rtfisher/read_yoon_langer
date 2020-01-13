@@ -53,7 +53,7 @@ tw      : T/W -- ratio of the rotational energy to the gravitational energy
 jtot    : total angular momentum
 egrav   : gravitational energy
 erot    : rotational energy
-pi3     : volume integration of pressure times 3
+pi3     : volume integration of pressure (no factor of 3; rtf 1/12/20)
 temp    : you can ignore this.
 frhocrit: 'parameter 'f_p' in the paper
 w0      : central angular velocity
@@ -62,8 +62,8 @@ bfit    : parameter 'a' in the paper
 
 rho(i,j) = rho(mu,r) : density
 w(i,j)  = Omega(mu,r): angular velocity
-Psi(i,j) = Psi(mu,r) : total potential
-Phi(i,j) = Phi(mu,r) : gravitaional potential
+Psi(i,j) = Psi(mu,r) : gravitational potential (correction noted 1/12/20)
+Phi(i,j) = Phi(mu,r) : total potential (correctio noted 1/12/20)
 
 
 Here, rho(i,j), w(i,j), Psi(i,j) and Phi(i,j) are scaled with the basis
