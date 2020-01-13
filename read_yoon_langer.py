@@ -39,7 +39,7 @@ smallfloat = sys.float_info.min # Store a minimum sized float
 
 # functionality flags
 
-verbose = False  # verbose output
+verbose = True  # verbose output
 
 # Define pressure according to completely degenerate electron gas,
 #  from Ostriker & Bodenheimer (1968), used by Yoon & Langer (2005).
@@ -99,7 +99,7 @@ def analyze (file):
   totalJ    = 0. # total angular momentum check
   totalEg   = 0. # total gravitational energy check
   totalErot = 0. # total rotational energy check
-  totalpi3  = 0. # 3 P V virial term
+  totalpi3  = 0. # P V virial term
 
 # Declare space for the 2D array model data on nth x nr mesh
 
@@ -120,8 +120,8 @@ def analyze (file):
 
     rho = float (lst [0]) # dimensionless density
     w   = float (lst [1]) # dimensionless angular velocity
-    psi = float (lst [2]) # dimensionless total potential
-    phi = float (lst [3]) # dimensionless gravitational potential
+    psi = float (lst [2]) # dimensionless gravitational potential
+    phi = float (lst [3]) # dimensionless total potential
 
     j = counter % nr           # set innermost array index in r
     i = (counter - j) // nth   # set outer array index in (cos theta)
@@ -155,7 +155,7 @@ def analyze (file):
     dM = rho * dV               # mass in cell
     vphi = w * rcyl             # angular velocity
     dJ = dM * rcyl * vphi       # angular momentum in cell   
-    dEg= 0.5 * dM * phi               # gravitational energy 
+    dEg= 0.5 * dM * psi         # gravitational energy 
     dErot = 0.5 * dM * vphi**2. # rotational energy
     pdV = pressure (rho, rhomax) * dV # p dV used in virial computation
      
